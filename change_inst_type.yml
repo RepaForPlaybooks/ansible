@@ -1,0 +1,39 @@
+---
+- name: Change type of HVM instance
+  hosts: local
+  connection: local
+    
+  vars:
+    keypair       : ec2key
+    instance_id   : i-0b19c9d32b5ec7de6
+    tag_name      : ans456
+    target_instance_type: t3.micro
+    region        : eu-west-1
+    aws_access_key: AKIAJRYIKJSGJLYL3QLA
+    aws_secret_key: 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
+    
+  tasks:
+  - name: Stop instance
+    local_action:
+      module: ec2
+      region: "{{ region }}"
+      instance_tags:
+        Name: "{{ tag_name }}"
+      state: stopped
+      wait: yes
+      wait_timeout : 200
+
+  - name: Change the instance ec2 type
+    shell: 
+#      aws --region eu-west-1 ec2 modify-instance-attribute --instance-id "{{ instance_id }}" --ena-support
+#      aws --region eu-west-1 ec2 modify-instance-attribute --instance-id "{{ instance_id }}" --instance-type "{{ target_instance_type }}"
+      aws --profile privat-it --region eu-west-1 ec2 modify-instance-attribute --instance-id "{{ instance_id }}" --ena-support && aws --profile privat-it --region eu-west-1 ec2 modify-instance-attribute --instance-id "{{ instance_id }}" --instance-type "{{ target_instance_type }}"
+    delegate_to: 127.0.0.1
+
+  - name: Start instance
+    local_action:
+      module: ec2
+      region: "{{ region }}"
+      instance_tags:
+        Name: "{{ tag_name }}"
+      state: running
